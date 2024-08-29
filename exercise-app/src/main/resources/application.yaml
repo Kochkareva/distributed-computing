@@ -1,7 +1,0 @@
-server:
-  port: "8081"
-spring:
-  datasource:
-    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/traininarium}
-    username: ${DATASOURCE_USERNAME:admin}
-    password: ${DATASOURCE_PASSWORD:admin}
