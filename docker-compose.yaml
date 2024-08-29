@@ -1,20 +1,19 @@
 version: '3'
 services:
-  mediawiki:  # название сервиса
-    image: mediawiki  # образ, который скачиывается с DockerHub
+  worker-1:
+    build:
+      context: /worker-1
+      dockerfile: Dockerfile
     volumes:
-      - ./mediawiki_data:/var/data  # создание volumes, который будет использоваться для хранения данных MediaWiki 
-    ports:
-      - 8081:80 # открывает порт 8080 на хостовой машине, который будет проксирован на порт 81 внутри контейнера.
-  wordpress:  # название сервиса
-    image: wordpress  # образ, который скачиывается с DockerHub
+      - .\data:/var/data
+      - .\result:/var/result
+
+  worker-2:
+    depends_on:
+      - worker-1
+    build:
+      context: /worker-2
+      dockerfile: Dockerfile
     volumes:
-      - ./wordpress_data:/var/data  # создание volumes, который будет использоваться для хранения данных wordpress 
-    ports:
-      - 8082:80 # открывает порт 8080 на хостовой машине, который будет проксирован на порт 82 внутри контейнера.
-  gitea:  # название сервиса
-    image: gitea/gitea  # образ, который скачиывается с DockerHub
-    ports:
-      - 8083:80  # открывает порт 8080 на хостовой машине, который будет проксирован на порт 83 внутри контейнера.
-    volumes:
-      - ./gitea_data:/var/data  # создание volumes, который будет использоваться для хранения данных gitea 
+      - .\result:/var/data
+      - .\result:/var/result
