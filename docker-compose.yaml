@@ -1,19 +1,73 @@
 version: '3'
-services:
-  worker-1:
-    build:
-      context: /worker-1
-      dockerfile: Dockerfile
-    volumes:
-      - .\data:/var/data
-      - .\result:/var/result
 
-  worker-2:
-    depends_on:
-      - worker-1
-    build:
-      context: /worker-2
-      dockerfile: Dockerfile
+networks:
+  mynetwork:
+    driver: bridge
+
+#all necessary containers(services)
+services:
+  #database
+  postgresql:
+    #configuration
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      POSTGRES_DB: traininarium
     volumes:
-      - .\result:/var/data
-      - .\result:/var/result
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
+    restart: always
+    networks:
+      - mynetwork
+  
+  exercise-service:
+    build:
+      context: .
+      dockerfile: ./exercise-app/Dockerfile
+    ports:
+      - 8081:8081
+    environment:
+      DATASOURCE_URL: jdbc:postgresql://postgresql:5432/traininarium
+      DATASOURCE_USERNAME: admin
+      DATASOURCE_PASSWORD: admin
+    restart: always
+    #wait build database
+    depends_on:
+      - postgresql
+    networks:
+      - mynetwork
+    
+  training-service:
+    build:
+      context: .
+      dockerfile: ./training-app/Dockerfile
+    ports:
+      - 8082:8082
+    environment:
+      EXERCISE_SERVICE_HOST: exercise-service:8081
+      DATASOURCE_URL: jdbc:postgresql://postgresql:5432/traininarium
+      DATASOURCE_USERNAME: admin
+      DATASOURCE_PASSWORD: admin
+    restart: always
+    #wait build database
+    depends_on:
+      - postgresql
+    networks:
+      - mynetwork
+
+  nginx:
+    #configuration
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    restart: always
+    depends_on:
+      - training-service
+      - exercise-service
+    networks:
+      - mynetwork
+

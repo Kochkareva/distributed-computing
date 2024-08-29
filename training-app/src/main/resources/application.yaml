@@ -1,0 +1,9 @@
+exercise-service:
+  host: ${EXERCISE_SERVICE_HOST:localhost:8080}
+server:
+  port: "8082"
+spring:
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/traininarium}
+    username: ${DATASOURCE_USERNAME:admin}
+    password: ${DATASOURCE_PASSWORD:admin}
